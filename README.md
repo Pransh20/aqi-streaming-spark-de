@@ -39,7 +39,7 @@ To showcase end-to-end data engineering skills—from data ingestion, streaming,
                                                       +--> [Rolling Window Aggregation]
                                                       +--> [Console Output | Parquet | DB]
 
-
+```
 
 
 ## Getting Started
