@@ -49,7 +49,7 @@ To showcase end-to-end data engineering skills—from data ingestion, streaming,
 ```bash
 git clone https://github.com/YOUR_USERNAME/aqi-streaming-spark-de.git
 cd aqi-streaming-spark-de
-
+```
 
 
 ### 2. Install dependencies
@@ -61,7 +61,7 @@ cd aqi-streaming-spark-de
 
 ```bash
 pip install -r requirements.txt
-
+```
 
 ### 3. Set up .env
 
@@ -78,13 +78,13 @@ Get an OpenAQ API key from [OpenAQ](https://docs.openaq.org/docs/getting-started
 
 ```bash
 docker compose up -d kafka zookeeper
-
+```
 
 ### 5. Run the Kafka Producer
 
 ```bash
 python ingestion/producer.py
-
+```
 
 ### 6. Prepare Region Lookup Table
 
@@ -104,7 +104,7 @@ gdf["lat"] = gdf.geometry.centroid.y
 gdf["lon"] = gdf.geometry.centroid.x
 gdf[["bundesland", "lat", "lon"]].to_csv("region_lookup.csv", index=False)
 
-
+```
 
 ### 7. Run Spark Structured Streaming Job
 
@@ -112,7 +112,7 @@ gdf[["bundesland", "lat", "lon"]].to_csv("region_lookup.csv", index=False)
 spark-submit \
   --packages org.apache.spark:spark-sql-kafka-0-10_2.13:4.0.0 \
   streaming/spark_job.py
-
+```
 
 This will:
 
@@ -148,7 +148,7 @@ aqi-streaming-spark-de/
 ├── germany_states.geojson       # Downloaded state boundaries
 ├── requirements.txt             # Python dependencies
 └── README.md                    # This file
-
+```
 ## References
 
 - [OpenAQ API](https://docs.openaq.org/docs/getting-started)
