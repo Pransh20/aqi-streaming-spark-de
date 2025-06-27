@@ -1,8 +1,11 @@
 import os
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col, explode, sqrt, pow, row_number, avg, window
+from pyspark.sql.functions import from_json, col, explode, avg, window, to_timestamp
 from pyspark.sql.types import *
-from pyspark.sql.window import Window
+import pandas as pd
+import numpy as np
+from pyspark.sql.functions import pandas_udf
+from pyspark.sql.types import StringType
 
 KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "localhost:9093")
 TOPIC = "air_quality_de"
@@ -28,11 +31,20 @@ schema = StructType([
 spark = SparkSession.builder \
     .appName("AQI-Germany-Streaming") \
     .getOrCreate()
-
 spark.sparkContext.setLogLevel("WARN")
 
-# Load region lookup (bundesland, lat, lon)
-region_lookup = spark.read.csv("region_lookup.csv", header=True, inferSchema=True)
+# Broadcast region lookup table
+region_df = pd.read_csv("region_lookup.csv")
+broadcast_region = spark.sparkContext.broadcast(region_df)
+
+@pandas_udf(StringType())
+def assign_bundesland(lat, lon):
+    regions = broadcast_region.value
+    assigned = []
+    for la, lo in zip(lat, lon):
+        dists = np.sqrt((regions["lat"] - la) ** 2 + (regions["lon"] - lo) ** 2)
+        assigned.append(regions.loc[dists.idxmin(), "bundesland"])
+    return pd.Series(assigned)
 
 # Read from Kafka
 df = spark.readStream \
@@ -60,33 +72,29 @@ exploded = flat.select(
     col("result.locationsId").alias("locationsId")
 )
 
-# -- Region enrichment: join on nearest centroid (demo) --
-joined = exploded.crossJoin(region_lookup)
-joined = joined.withColumn("distance",
-    sqrt(
-        pow(col("latitude") - col("lat"), 2) +
-        pow(col("longitude") - col("lon"), 2)
-    )
+# Assign Bundesland using the pandas UDF
+exploded = exploded.withColumn(
+    "bundesland", assign_bundesland(col("latitude"), col("longitude"))
 )
 
-w = Window.partitionBy("sensorsId").orderBy(col("distance"))
-nearest = joined.withColumn("rn", row_number().over(w)).filter(col("rn") == 1)
+# Convert utc string to timestamp
+exploded = exploded.withColumn("utc_ts", to_timestamp(col("utc")))
 
-# -- Windowed aggregation by Bundesland, pollutant, and time window --
-agg = nearest.groupBy(
-    window(col("timestamp").cast("timestamp"), "5 minutes"),
+# Use watermark to enable append mode on timestamp column
+agg = exploded.withWatermark("utc_ts", "10 minutes").groupBy(
+    window(col("utc_ts"), "5 minutes"),
     col("bundesland"),
     col("parameter")
 ).agg(
     avg("value").alias("avg_value")
 )
 
-# -- Output to console --
+# Write to Parquet for visualization
 query = agg.writeStream \
-    .outputMode("complete") \
-    .format("console") \
-    .option("truncate", False) \
-    .option("numRows", 50) \
+    .outputMode("append") \
+    .format("parquet") \
+    .option("path", "output/") \
+    .option("checkpointLocation", "output/_checkpoint/") \
     .start()
 
 query.awaitTermination()

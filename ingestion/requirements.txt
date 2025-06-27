@@ -1,4 +1,29 @@
-kafka-python
+# Core Python dependencies
+pandas
+numpy
 requests
+
+# Spark UDFs
+pyarrow>=11.0.0
+
+# GeoPandas for centroid calculation (region_lookup step)
+geopandas
+
+# Streamlit for dashboard
+streamlit
+
+# Kafka client for producer
+kafka-python
+
+# For reading parquet in pandas/streamlit
+pyarrow
+
+# Only if you use environment variables via .env (optional)
 python-dotenv
+
+# If using Jupyter Notebooks for data exploration (optional)
+jupyter
+
+# If you do mapping/geo plots in Streamlit later (optional)
+pydeck
 

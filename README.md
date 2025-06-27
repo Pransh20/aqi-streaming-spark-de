@@ -157,13 +157,48 @@ aqi-streaming-spark-de/
 - [GeoJSON Bundesländer (geojson.de)](https://geojson.de)
 - [PySpark Pandas UDFs](https://spark.apache.org/docs/latest/api/python/user_guide/sql/pandas_on_spark/groupby.html)
 
+## Visualization Dashboard
+
+After running your Spark streaming job, you can view the results live with an interactive dashboard.
+
+### How to Run
+
+1. **Install Streamlit and dependencies** (already in `requirements.txt`):
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+2. **Run the Streamlit app:**
+
+    ```bash
+    streamlit run visualize_dashboard.py
+    ```
+
+3. Open your browser (the default link is usually [http://localhost:8501](http://localhost:8501)).
+
+---
+
+### Features
+
+- **Filter** by Bundesland and pollutant (PM2.5, PM10, NO2)
+- **Live-updating line charts** for each pollutant, per region
+- **Table of latest values** by region and pollutant
+- Data refreshes automatically as Spark writes to the `output/` folder
+
+---
+
+
+## Portfolio Tips
+
+- This end-to-end pipeline demonstrates streaming ingestion, enrichment, aggregation, and visualization—all in open source.
+- Consider pushing your repo public, with a real dashboard screenshot and clear instructions.
+- Add optional enhancements: interactive maps, alerts for poor air quality, or thresholds vs. EU guidelines.
+
+---
 
 ## Contact / License
 
 MIT License.  
 Project by Pransh Arora.  
 Questions, feedback, or ideas? pransh.arora@gmail.com
-
-## Next Steps
-
-Visualize these results live in Streamlit or your favorite dashboarding tool!
