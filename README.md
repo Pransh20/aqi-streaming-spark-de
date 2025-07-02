@@ -186,16 +186,6 @@ After running your Spark streaming job, you can view the results live with an in
 - **Table of latest values** by region and pollutant
 - Data refreshes automatically as Spark writes to the `output/` folder
 
----
-
-
-## Portfolio Tips
-
-- This end-to-end pipeline demonstrates streaming ingestion, enrichment, aggregation, and visualization—all in open source.
-- Consider pushing your repo public, with a real dashboard screenshot and clear instructions.
-- Add optional enhancements: interactive maps, alerts for poor air quality, or thresholds vs. EU guidelines.
-
----
 
 ## Contact / License
 
